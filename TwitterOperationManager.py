@@ -6,10 +6,12 @@ from swarms_fork.group_chat import AutoGroupMeeting
 from knowledge_base.meeting_notes import MeetingAssistant
 from tools.twitter_tookit import update_db_info, twitter_user_analysis, twitter_tweet_analysis
 from tools.twitter_functions import TwitterFunction
-from prompts.agent import (BRAND_TWITTER_AGENT_PROMPT, COMMUNITY_MANAGER_PROMPT, TWITTER_DATA_ANALYOR_PROMPT,ADMINISTRATIVE_ASSISTANT_PROMPT)
+from prompts.agent import (BRAND_TWITTER_AGENT_PROMPT, COMMUNITY_MANAGER_PROMPT, TWITTER_DATA_ANALYOR_PROMPT,
+                           ADMINISTRATIVE_ASSISTANT_PROMPT)
 from prompts.task import *
 import json
 import ast
+
 
 class TwitterAgent(Agent):
     def __init__(self, **kwargs, ):
@@ -20,7 +22,10 @@ class TwitterOperationManager:
     def __init__(self,
                  product_whitepaper: str = None,
                  account_handle: str = None,
-                 account_mission: str = None
+                 account_mission: str = None,
+                 write_cookies: dict = None,
+                 data_analyst_cookies: dict = None,
+                 publicist_cookies: dict = None,
                  ):
         self.model = OpenAIChat(
             openai_api_key=os.getenv("OPENAI_API_KEY"), model_name="gpt-4o-mini", temperature=0.1,
@@ -28,11 +33,30 @@ class TwitterOperationManager:
         self.product_whitepaper = product_whitepaper
         self.account_handle = account_handle
         self.account_mission = account_mission
+        if write_cookies is not None:
+            self.write_cookies = write_cookies
+        else:
+            self.write_cookies = json.loads(os.getenv("WRITE_COOKIES"))
+        if data_analyst_cookies is not None:
+            self.data_analyst_cookies = data_analyst_cookies
+        else:
+            self.data_analyst_cookies = json.loads(os.getenv("DATA_ANALYST_COOKIES"))
+        if publicist_cookies is not None:
+            self.publicist_cookies = publicist_cookies
+        else:
+            self.publicist_cookies = json.loads(os.getenv("PUBLICIST_COOKIES"))
         self._init_agent()
 
     def _init_agent(self):
-        self.twitter_writer_cookies = {"auth_token": '6b352a60fc5b02c731f400b7c7a990759012810f',
-                                       "ct0": 'c7689c3118648416c38e051b1ae7aed0311b92f3d935d1515d74eaab1767922057f1130cba27da60be5e99c24701d8b5f5739d8f65f97232476bf88414142598528fb2be7418bed212e0c97a9325567f'}
+        self.twitter_writer_cookies = {"auth_token": self.write_cookies['auth_token'],
+                                       "ct0": self.write_cookies[
+                                           'ct0']}
+        self.twitter_data_analyst_cookies = {"auth_token": self.data_analyst_cookies['auth_token'],
+                                             "ct0": self.data_analyst_cookies[
+                                                 'ct0']}
+        self.twitter_publicist_cookies = {"auth_token": self.publicist_cookies['auth_token'],  #
+                                          "ct0": self.publicist_cookies[
+                                              'ct0']}
         self.twitter_writer_function = TwitterFunction(cookies=self.twitter_writer_cookies,
                                                        account_handle=self.account_handle)
         self.twitter_writer = Agent(
@@ -51,8 +75,7 @@ class TwitterOperationManager:
             account_handle=self.account_handle,
             account_mission=self.account_mission,
         )
-        self.twitter_data_analyst_cookies = {"auth_token": '6b352a60fc5b02c731f400b7c7a990759012810f',
-                                             "ct0": 'c7689c3118648416c38e051b1ae7aed0311b92f3d935d1515d74eaab1767922057f1130cba27da60be5e99c24701d8b5f5739d8f65f97232476bf88414142598528fb2be7418bed212e0c97a9325567f'}
+
         self.twitter_data_analyst_function = TwitterFunction(cookies=self.twitter_data_analyst_cookies,
                                                              account_handle=self.account_handle)
         self.twitter_data_analyst = Agent(
@@ -71,8 +94,7 @@ class TwitterOperationManager:
             account_handle=self.account_handle,
             account_mission=self.account_mission,
         )
-        self.twitter_publicist_cookies = {"auth_token": '6b352a60fc5b02c731f400b7c7a990759012810f',
-                                          "ct0": 'c7689c3118648416c38e051b1ae7aed0311b92f3d935d1515d74eaab1767922057f1130cba27da60be5e99c24701d8b5f5739d8f65f97232476bf88414142598528fb2be7418bed212e0c97a9325567f'}
+
         self.twitter_publicist_function = TwitterFunction(cookies=self.twitter_publicist_cookies,
                                                           account_handle=self.account_handle)
         self.twitter_publicist = Agent(
@@ -109,15 +131,15 @@ class TwitterOperationManager:
             account_mission=self.account_mission,
         )
 
-
     def post_per_day(self, trun, count):
         # 获取当前日期
         today = date.today()
         # 计算昨日日期，通过当前日期减去一天的时间间隔
         yesterday = today - timedelta(days=1)
         meetingAssistant = MeetingAssistant()
-        notes = meetingAssistant.query_meeting_notes_by_metadata( {"$and": [{'date': str(yesterday)},{'topic': 'daily meeting'}]})
-        if len(notes) >0 :
+        notes = meetingAssistant.query_meeting_notes_by_metadata(
+            {"$and": [{'date': str(yesterday)}, {'topic': 'daily meeting'}]})
+        if len(notes) > 0:
             note = ast.literal_eval(notes[0][0].page_content)[-1]
         else:
             note = ''
@@ -264,4 +286,4 @@ class TwitterOperationManager:
         meetingAssistant = MeetingAssistant()
         meetingAssistant.save_meeting_notes([note])
 
-        #print(meetingAssistant.delete_meeting_notes_by_metadata({"date": '2025-02-25'}))
+        # print(meetingAssistant.delete_meeting_notes_by_metadata({"date": '2025-02-25'}))

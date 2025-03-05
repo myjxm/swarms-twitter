@@ -55,34 +55,34 @@ def main():
                         The ** $ CA token economy** to bolster platform sustainability and incentivize long-term participation.
                         Ultimately, the account aims to position Contract Protocol as a leading example of how multi-agent collaboration can redefine the future of intelligent business operations and decentralized organizations."""
     twitter_operation_manager = TwitterOperationManager(product_whitepaper=product_whitepaper,account_handle=account_handle,account_mission=account_mission)
-    scheduler = BlockingScheduler()
-    # 添加每日发推任务
-    scheduler.add_job(post_per_day, 'cron', hour=1, minute=30,
-                      kwargs={"twitter_operation_manager": twitter_operation_manager})
-    scheduler.add_job(post_per_day, 'cron', hour=3, minute=30,
-                      kwargs={"twitter_operation_manager": twitter_operation_manager})
-    scheduler.add_job(post_per_day, 'cron', hour=5, minute=30,
-                      kwargs={"twitter_operation_manager": twitter_operation_manager})
-    scheduler.add_job(post_per_day, 'cron', hour=7, minute=30,
-                      kwargs={"twitter_operation_manager": twitter_operation_manager})
-    # 添加回复mention任务
-    scheduler.add_job(twitter_operation_manager.reply_mentions,'interval',  hours=2)
-    # 添加回复timeline任务
-    scheduler.add_job(twitter_operation_manager.reply_timeline, 'interval', hours=2)
-    # 添加查找价值用户任务
-    scheduler.add_job(twitter_operation_manager.search_twitter_user, 'interval', hours=12)
-    # 添加每日一会任务
-    scheduler.add_job(twitter_operation_manager.daily_meeting, 'cron', hour=22,minute=0)
-    try:
-        scheduler.start()
-    except KeyboardInterrupt:
-        scheduler.shutdown()
+    # scheduler = BlockingScheduler()
+    # # 添加每日发推任务
+    # scheduler.add_job(post_per_day, 'cron', hour=1, minute=30,
+    #                   kwargs={"twitter_operation_manager": twitter_operation_manager})
+    # scheduler.add_job(post_per_day, 'cron', hour=3, minute=30,
+    #                   kwargs={"twitter_operation_manager": twitter_operation_manager})
+    # scheduler.add_job(post_per_day, 'cron', hour=5, minute=30,
+    #                   kwargs={"twitter_operation_manager": twitter_operation_manager})
+    # scheduler.add_job(post_per_day, 'cron', hour=7, minute=30,
+    #                   kwargs={"twitter_operation_manager": twitter_operation_manager})
+    # # 添加回复mention任务
+    # scheduler.add_job(twitter_operation_manager.reply_mentions,'interval',  hours=2)
+    # # 添加回复timeline任务
+    # scheduler.add_job(twitter_operation_manager.reply_timeline, 'interval', hours=2)
+    # # 添加查找价值用户任务
+    # scheduler.add_job(twitter_operation_manager.search_twitter_user, 'interval', hours=12)
+    # # 添加每日一会任务
+    # scheduler.add_job(twitter_operation_manager.daily_meeting, 'cron', hour=22,minute=0)
+    # try:
+    #     scheduler.start()
+    # except KeyboardInterrupt:
+    #     scheduler.shutdown()
 
-    #twitter_operation_manager.reply_mentions()
+    twitter_operation_manager.reply_mentions()
     #twitter_operation_manager.reply_timeline()
     #twitter_operation_manager.search_twitter_user()
     #twitter_operation_manager.daily_meeting()
-    # post_per_day(twitter_operation_manager)
+    #post_per_day(twitter_operation_manager)
     # time.sleep(60)
     # post_per_day(twitter_operation_manager)
     # time.sleep(60)
